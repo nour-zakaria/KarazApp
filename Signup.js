@@ -13,64 +13,88 @@ import {
 import CheckBox from 'react-native-check-box'
 import { Image as ReactImage } from "react-native";
 import axios from 'axios';
+import { LoginButton, AccessToken } from 'react-native-fbsdk';
 import DeviceStorge from './Services/DeviceStorge';
-
-
-
+// import {
+//   GoogleSignin,
+//   GoogleSigninButton,
+//   statusCodes,
+// } from '@react-native-community/google-signin';
+// GoogleSignin.configure();
+const ACCESS_TOKEN = "token";
 export default class Signup extends React.Component {
   constructor(props) {
     super(props);
-   this.state = {
-      name: '',
-      phone:'',
-      password: '',
-      error: {},
-      loading: false,
-       isChecked: false,
+   this.state = {  name: '',password: '',errors: {},
+      isChecked: false, accept : false, alertMsg : '' , MultiInput: '' ,
+     pressStatus: false };
+ this.signup = this.signup.bind(this);
  
-    };
-
-    this.loginUser = this.loginUser.bind(this);
   }
+//   signIn = async () => {
+//   try {
+//     await GoogleSignin.hasPlayServices();
+//     const userInfo = await GoogleSignin.signIn();
+//     this.setState({ userInfo });
+//   } catch (error) {
+//     if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+//       // user cancelled the login flow
+//     } else if (error.code === statusCodes.IN_PROGRESS) {
+//       // operation (e.g. sign in) is in progress already
+//     } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+//       // play services not available or outdated
+//     } else {
+//       // some other error happened
+//     }
+//   }
+// };
 
-  loginUser() {
-    // DeviceStorge.saveKey("id_token", response.data.jwt); 
-    const { name, phone, password } = this.state;
+   async signup () {
+      try {
+          let { name ,password, MultiInput} = this.state;
+let user = {name , password}
+      if(MultiInput.includes("@"))
+      {
+        user.email= MultiInput
 
-    this.setState({ error: {}, loading: true });
-    axios.post('https://karaz5.herokuapp.com/api/user/signup' ,{
-        name: name,
-        phone: phone,
-        password: password
-    })
-    .then((response) => {
-    
-       DeviceStorge.saveKey("id_token", response.data.token);
-       this.props.navigation.navigate('Cong');
-    })
-    .catch((error) => {
-      // error['serverError'] =
-      alert(error)
-        //  alert( 'البريد الالكتروني الذي أدخلته مستخدم في حساب آخر');
-          this.setState(this.setState({ error: error }));
-           
-    });
+      }
+      else {
+user.phone= MultiInput
+      }   
+ const Response = await  axios.post('https://karaz6.herokuapp.com/api/user/signup' , user ) 
+    await DeviceStorge.setItem(ACCESS_TOKEN,Response.data.token);
+     const AuthStr = 'Bearer '.concat(await DeviceStorge.getItem(ACCESS_TOKEN)); 
+     console.log(AuthStr + "siiiign upp")
+    const response = await  axios.get('https://karaz6.herokuapp.com/api/user/profile',{ headers: { Authorization: AuthStr } }) 
+      if(response.status === 200) {
+               this.props.navigation.navigate('Cong');}
+    else if(response.status === 201) { 
+       const response2 = await  axios.get('https://karaz6.herokuapp.com/api/verifyAccount/MobileSend',{ headers: { Authorization: AuthStr } }) 
+                    var obj = JSON.parse(Response.config.data)
+                   if("email" in obj){ this.props.navigation.navigate('AccountEmail'); }
+                     else {  this.props.navigation.navigate('AccountPhone');}  }                           
+      }catch(error) {
+        this.setState({error: error});
+        console.log("error " + error);
+    }                         
+  
   }
-
   render() {
 
     return (
       <View style={styles.container}>
+      
+  
 
-    <StatusBar  
+   <StatusBar  
     backgroundColor = "#CC5775"  
      barStyle = "dark-content"   
       hidden = {false}        
                 /> 
 
-      <Text style={styles.tooltext}>
+      {/* <Text style={styles.tooltext}>
             انشاء حساب
-          </Text>
+          </Text> */}
            <TouchableOpacity  
            style={styles.backbutton}
                onPress={() => this.props.navigation.navigate('Home')}
@@ -102,6 +126,7 @@ export default class Signup extends React.Component {
           </TouchableOpacity>
           <View style={styles.rect}>
             <TouchableOpacity
+              onPress={() => this.signIn}>
            
               style={styles.button}>
               <View style={styles.image2Row}>
@@ -119,33 +144,36 @@ export default class Signup extends React.Component {
         <View>
           <TextInput
             style={styles.input1}
-            onChangeText={name => this.setState({ name })}
-            value={this.state.value}
+             onChangeText={(value) => this.setState({name: value})}
+        value={this.state.name}
             placeholder="الاسم كاملا"
           />
+            <Text style={styles.errorStyle1}>{this.state.errors["name"]}</Text> 
         </View>
         <View>
           <TextInput
             style={styles.input2}
-            onChangeText={password => this.setState({ password })}
-             secureTextEntry={true}
-            // onChangeText={(text) => this.validate(text, 'username')}
-            placeholder="كلمة المرور "
+                   onChangeText={(value) => this.setState({MultiInput: value})}
+        value={this.state.MultiInput}
+ placeholder="رقم الهاتف او البريد الاكتروني"
+          
           />
+            <Text style={styles.errorStyle2}>{this.state.errors["password"]}</Text> 
         </View>
         <View>
           <TextInput
             style={styles.input3}
-            onChangeText={phone => this.setState({ phone })}
-            // onChangeText={(text) => this.validate(text, 'username')}
-            placeholder="رقم الموبايل"
-          />
+              onChangeText={password => this.setState({ password })}
+             secureTextEntry={true}
+            placeholder="كلمة المرور "
+            //  keyboardType="numeric"
+         
+           />
+            <Text style={styles.errorStyle3}>{this.state.errors["phone"]}</Text> 
         
          
         </View>
-        <TouchableOpacity>
-          <Text style={styles.button3}>التسجيل  بالبريد الاكتروني </Text>
-        </TouchableOpacity>
+        
         <TouchableOpacity>
           <Text style={styles.privacy}>
             أوافق على سياسة الخصوصية و الشروط والأحكام{' '}
@@ -157,13 +185,13 @@ export default class Signup extends React.Component {
  style={styles.materialCheckbox}
     onClick={()=>{ this.setState({ isChecked:!this.state.isChecked}) }}
     isChecked={this.state.isChecked}
-  checkBoxColor ={'#707070'}
-  checkedCheckBoxColor ={'#DE3163'}
+  // checkBoxColor ={'#CC5775'}
+   checkedCheckBoxColor ={'#FFFFFF'}
 />
 
         <TouchableOpacity
           style={styles.button1}
-          onPress={() => this.loginUser()}>
+          onPress={() => this.signup()}>
           <Text>انشاء حساب</Text>
         </TouchableOpacity>
         <View>
@@ -174,7 +202,7 @@ export default class Signup extends React.Component {
             <Text style={styles.text4} > سجل دخول الان </Text>
             
           </TouchableOpacity>
-        </View>
+        </View> 
       </View>
     );
   }
@@ -199,7 +227,7 @@ const styles = StyleSheet.create({
    materialCheckbox: {
     width: 10,
     height: 10,
-    marginTop: 243,
+    marginTop: 180,
     marginLeft: 311,
     left:5
   },
@@ -330,7 +358,7 @@ const styles = StyleSheet.create({
     width: 328,
     height: 48,
     left: 15,
-    top: 60,
+    top: 50,
     textAlign: 'right',
   },
   input3: {
@@ -360,19 +388,19 @@ const styles = StyleSheet.create({
     width: 328,
     height: 48,
     left: 15,
-    top: 130,
+    top: 110,
     textAlign: 'right',
   },
   button3: {
     opacity: 1,
     position: 'absolute',
     backgroundColor: 'rgba(255, 255, 255, 0)',
-    color: 'rgba(88, 93, 246, 1)',
-    fontSize: 14,
-    fontWeight: '400',
-    fontStyle: 'normal',
-    fontFamily: 'Cairo',
-    textAlign: 'center',
+    // color: 'rgba(88, 93, 246, 1)',
+    // fontSize: 14,
+    // fontWeight: '400',
+    // fontStyle: 'normal',
+    // fontFamily: 'Cairo',
+    // textAlign: 'center',
     marginTop: 0,
     marginRight: 0,
     marginBottom: 0,
@@ -384,7 +412,7 @@ const styles = StyleSheet.create({
     width: 190,
     height: 26,
     right: 180,
-    top: 187,
+    top: 395,
   },
   button1: {
     opacity: 1,
@@ -436,7 +464,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 26,
     right: 90,
-    bottom:-110
+    bottom:-130
   },
   button4: {
     opacity: 1,
@@ -452,7 +480,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 26,
     right: 185,
-    top: 84,
+    top: 103,
   },
   text4: {
   fontSize: 14,
@@ -476,8 +504,8 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     width: 300,
     height: 26,
-    left: 10,
-    top: 245,
+    left: 8,
+    top: 184,
     color: 'rgba(222, 49, 99, 1)',
     fontSize: 15,
     fontWeight: '400',
@@ -544,5 +572,28 @@ loginButtonBelowText1: {
     height: 24.92,
     right: 10,
     top: 15, 
-  }
+  },
+    errorStyle1:{
+    color:'red',
+    top:45,
+    right:25
+  },
+   errorStyle2:{
+    color:'red',
+   top:115,
+    right:25
+  },
+   errorStyle3:{
+    color:'red',
+   top:180,
+    left:280
+  },
+  switch: {
+    color: "#585DF6",
+    fontSize: 14,
+    fontWeight: '400',
+    fontStyle: 'normal',
+    fontFamily: 'Cairo',
+    textAlign: 'center',
+    }
 });

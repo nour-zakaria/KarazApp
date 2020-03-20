@@ -8,6 +8,7 @@ import AssertEmail from './AssertEmail';
 import AccountPhone from './AccountPhone';
 import AccountEmail from './AccountEmail';
 import ForgetPass from './ForgetPass';
+import CODE2 from './CODE2';
 import CODE from './CODE';
 import NewPass from './NewPass';
 import { createAppContainer } from 'react-navigation';
@@ -58,6 +59,13 @@ navigationOptions: {
       header: null,
     }
 },
+CODE2: {
+screen: CODE2,
+navigationOptions: {
+      header: null,
+    }
+},
+
 ForgetPass: {
 screen: ForgetPass,
 navigationOptions: {
@@ -70,8 +78,8 @@ navigationOptions: {
       header: null,
     }
 },
-AccountPhone: {
-screen: AccountPhone,
+AccountEmail: {
+screen: AccountEmail,
 navigationOptions: {
       header: null,
     }

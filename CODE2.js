@@ -2,18 +2,55 @@ import React , {Component} from 'react';
 import {StyleSheet, Text, View,TouchableOpacity, StatusBar,TextInput} from 'react-native';
 import {Image as ReactImage} from 'react-native';
 import CodeInput from 'react-native-confirmation-code-input';
-
-export default class CODE extends Component {
+import axios from 'axios';
+const ACCESS_TOKEN = 'token';
+export default class CODE2 extends Component {
 
   constructor(props) {
       super(props);
       this.state = { 
+       code : '',
+       data : ''
       };
   }
 
+    
+  onFulfill = async(code) => {
+try {
+// let {code} =this.state
+  
+    const data = this.props.navigation.getParam('passdata', 'some default value');
+    this.setState({
+    data
+ });
+  console.log(data)
+ let  CodeVerify = {random :code , id : data }
+ const response = await axios.post(' https://karaz6.herokuapp.com/api/forgetPassword/verifyCode' , CodeVerify )
+  console.log(response.status)
+    if(response.status === 201 || response.status === 200){
+       this.props.navigation.navigate('NewPass', {RANDOM : code , ID :  data});
+      
+        }
+       else  {
+          console.log("error ")
+       }
+}
+             catch(error) {
+        this.setState({error: error});
+        console.log("error " + error);
+    }
+  }
+
+// async contnuie () {
+//   var data = this.onFulfill() ;
+// console.log(data)
+//  this.props.navigation.navigate('NewPass',data);
+// }
+
+
+
   render() {
     return (
-  
    <View style={styles.container}>
     <StatusBar  
     backgroundColor = "#CC5775"  
@@ -50,10 +87,10 @@ export default class CODE extends Component {
         resizeMode="contain"
         style={styles.image}
         />
-      <Text style={styles.text1}>
-        الرجاء إدخال الكود المرسل إلى رقم الهاتف
+       <Text style={styles.text1}>
+        الرجاء إدخال الكود المرسل إلى البريد الإلكتروني
            {"\n"} 
-           ********11
+          y*********i@gm***.com
       </Text>
       {/* <Text style={styles.text2}></Text> */}
           <View style = {styles.codeinput}>
@@ -62,18 +99,17 @@ export default class CODE extends Component {
       secureTextEntry= {false}
       className={'border-b'}
       space={10}
-        keyboardType="numeric"
       size={30}
       codeLength={6}
        activeColor="rgba(222, 49, 99, 1)"
       inactiveColor='rgba(148, 148, 148, 1)'
       inputPosition='center'
-      onFulfill={(code) => this._onFulfill(code)}
+      onFulfill={(code) => this.onFulfill(code)}
     />
-  </View>
-      <Text style={styles.text3}>تفقدي هاتفك المحمول !</Text>
+  </View> 
+    <Text style={styles.text3}>تفقدي بريدك الالكتروني !</Text> 
       <View>
-       <TouchableOpacity style={styles.button2}  onPress={() =>  this.props.navigation.navigate('NewPass')}>
+       <TouchableOpacity style={styles.button2}  onPress={() =>  this.contnuie()}>
           <Text style={styles.textin}> استمرار</Text>
         </TouchableOpacity>
            </View>

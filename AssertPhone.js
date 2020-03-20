@@ -1,6 +1,7 @@
 import React , {Component} from 'react';
 import {StyleSheet, Text, View,TouchableOpacity, StatusBar, TextInput} from 'react-native';
 import {Image as ReactImage} from 'react-native';
+import axios from 'axios';
 
 
 export default class AssertPhone extends Component {
@@ -8,10 +9,48 @@ export default class AssertPhone extends Component {
   constructor(props) {
       super(props);
       this.state = { 
+        phone: '',
+        errors : {},
+        count : 0,
       };
+         this.ONPress = this.ONPress.bind(this);
+  }
+   validation = () => {
+     let isValid = true;
+    let {phone} = this.state;
+      let errors = {};
+      
+    if(!phone){
+     isValid = false;
+     errors["phone"]= 'الرجاء ادخال رقم الهاتف'
+       this.setState({errors: errors});
+        return isValid;
+     }
+    else {
+      isValid = true;
+        return isValid;
+    }
+      
   }
 
+        ONPress = () =>{
+             this.props.navigation.navigate('CODE');    
+       
+  //   // if(this.validation()){
+  //   //   alert(this.validation())
+  //    const { phone } = this.state;
+  //       axios.post('https://karaz6.herokuapp.com/api/forgetPassword/FindAccount',{
+  //       phone: phone,})
+  //               .then(Response => {   
+                  
+  // }).catch(error => {
+  //    alert(error+ "سرسؤءر")
+  //  errors["serverError"] = "يُرجى التأكد من البيانات المدخلة والمحاولة مجددًا."; });
+     }
+
+
   render() {
+    const {phone } = this.state;
     return (
   
    <View style={styles.container}>
@@ -42,11 +81,11 @@ export default class AssertPhone extends Component {
         />
          <TextInput
             style={styles.input1}
-        
+           keyboardType="numeric"
             placeholder="رقم الهاتف"
           />
          <TouchableOpacity 
-          style={styles.button1} onPress={() =>  this.props.navigation.navigate('CODE')}>
+          style={styles.button1} onPress={() => this.ONPress()}>
         <Text style={styles.text1}> استمرار</Text>
         </TouchableOpacity>
          <TouchableOpacity style={styles.button2} 
@@ -54,7 +93,8 @@ export default class AssertPhone extends Component {
             this.props.navigation.navigate('Signup')} >    
        
             <Text style={styles.text2}> عودة لتسجيل الدخول</Text>
-          </TouchableOpacity>           
+          </TouchableOpacity>   
+           <Text style={styles.errorStyle}>{this.state.errors["phone"]}</Text>        
     </View>
 
     );
@@ -164,7 +204,7 @@ const styles = StyleSheet.create({
     width: 328,
     height: 48,
     left: 15,
-    top: 350,
+    top: 360,
   },
    input1: {
     opacity: 1,
@@ -213,5 +253,10 @@ const styles = StyleSheet.create({
     right: 10,
     top: 15, 
   },
+   errorStyle:{
+    color:'red',
+   top:195,
+    right:25
+  }
  
 });

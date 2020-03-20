@@ -1,15 +1,52 @@
 import React , {Component} from 'react';
 import {StyleSheet, Text, View,TouchableOpacity, StatusBar, TextInput} from 'react-native';
 import {Image as ReactImage} from 'react-native';
-
-
+import DeviceStorge from './Services/DeviceStorge';
+import axios from 'axios';
+const ACCESS_TOKEN = "token";
 export default class AssertEmail extends Component {
 
   constructor(props) {
       super(props);
       this.state = { 
+        email :'',
+        
+        
       };
   }
+  
+     async onLoginPressed() {
+try {
+   let email = this.state ; 
+
+  let emailSend = {email}
+  const {params} = this.props.navigation.state;
+ 
+ const Response = await  axios.post('https://karaz6.herokuapp.com/api/forgetPassword/FindAccount',email );
+//  console.log(Response.status);
+// console.log(Response.data.user);
+if(Response.status === 200){
+  const response = await  axios.post('https://karaz6.herokuapp.com/api/forgetPassword/sendEmail',email );
+  if(response.status === 200){
+    var UserId = response.data.sucess.id;
+  //  console.log(UserId);
+    
+    this.props.navigation.navigate('CODE2', { passdata: UserId  })
+    ;}
+          
+
+  }
+   //const response = await  axios.post('http://karaz6.herokuapp.com/api/forgetPassword/verifyCode',email );
+
+}
+     catch(error) {
+        this.setState({error: error});
+        console.log( error);
+    }
+
+  }
+
+
 
   render() {
     return (
@@ -42,12 +79,13 @@ export default class AssertEmail extends Component {
         />
          <TextInput
             style={styles.input1}
-        
+                onChangeText={(value) => this.setState({email: value})}
+        value={this.state.email}
             placeholder="البريد الاكتروني"
           />
          <TouchableOpacity 
           style={styles.button1} 
-        //   onPress={() =>  this.props.navigation.navigate('CODE2')}
+          onPress={() =>  this.onLoginPressed()}
           >
         <Text style={styles.text1}> استمرار</Text>
         </TouchableOpacity>

@@ -1,6 +1,7 @@
 import React , {Component} from 'react';
 import {StyleSheet, Text, View,TouchableOpacity, StatusBar,TextInput} from 'react-native';
 import {Image as ReactImage} from 'react-native';
+import CodeInput from 'react-native-confirmation-code-input';
 
 
 export default class AccountPhone extends Component {
@@ -8,10 +9,41 @@ export default class AccountPhone extends Component {
   constructor(props) {
       super(props);
       this.state = { 
+        //  code: '',
+        // errors :{}
       };
   }
+ 
+ _onFulfill = (code) => {
+    axios.post('https://karaz6.herokuapp.com/api/forgetPassword/verifyCode' ,{ 
+        code: code,
+        })
+    .then((Response) => {
+        console.log(Response);
+      DeviceStorge.saveKey("token", Response.data.token);
+       const data =  DeviceStorge.getKey("token");
+        const AuthStr = 'Bearer '.concat(Response.data.token); 
+       console.log(AuthStr);
+      axios.get(' https://karaz6.herokuapp.com/api/verifyAccount/send',{ headers: { Authorization: AuthStr } })
+                          .then(response => {
+                                  console.log(response.status)
+                                   this.props.navigation.navigate('Cong');
+                               
+                           }).catch(error => {
+                                alert(error); });
+                            
+                           
+     }).catch((error) => {
+     console.log(error);
+      alert(error)
+          this.setState(this.setState({ error: error }));});
+    
 
-  render() {
+
+                            
+                         
+ }
+ render() {
     return (
   
    <View style={styles.container}>
@@ -26,7 +58,7 @@ export default class AccountPhone extends Component {
           </Text>
            <TouchableOpacity 
             style={styles.backbutton}
-                onPress={() => this.props.navigation.navigate('Home')}
+                onPress={() => this.props.navigation.navigate('Signup')}
             >
            <ReactImage
         source={require("./Images/surface1.png")}
@@ -34,31 +66,36 @@ export default class AccountPhone extends Component {
        
         />
         </TouchableOpacity>
-        <View>
-        <TouchableOpacity  style={styles.backbutton} 
-          onPress={() => this.props.navigation.navigate('AssertPhone')}
-        >
-           <ReactImage
-        source={require("./Images/surface1.png")}
-       
-       
-        />
-        </TouchableOpacity>
-           </View>
+        
       <ReactImage
         source={require("./Images/checkmobile.png")}
         resizeMode="contain"
         style={styles.image}
         />
       <Text style={styles.text1}>
-        الرجاء إدخال الكود المرسل إلى البريد الإلكتروني
+        الرجاء إدخال الكود المرسل إلى رقم الهاتف
            {"\n"} 
-          y*********i@gm***.com
+           ********11
       </Text>
       {/* <Text style={styles.text2}></Text> */}
       <Text style={styles.text3}>تفقدي هاتفك المحمول !</Text>
+      <View style = {styles.codeinput}>
+        <CodeInput
+      ref="codeInputRef1"
+      secureTextEntry= {false}
+      className={'border-b'}
+      space={10}
+      size={30}
+       keyboardType="numeric"
+      codeLength={6}
+       activeColor="rgba(222, 49, 99, 1)"
+      inactiveColor='rgba(148, 148, 148, 1)'
+      inputPosition='center'
+      onFulfill={(code) => this._onFulfill(code)}
+    />
+  </View>
       <View>
-       <TouchableOpacity style={styles.button2}  onPress={() =>  this.props.navigation.navigate('NewPass')}>
+       <TouchableOpacity style={styles.button2}  onPress={() =>  this.props.navigation.navigate('Cong')}>
          <Text style={styles.textin}> تاكيد الحساب</Text>
         </TouchableOpacity>
            </View>
@@ -188,5 +225,8 @@ const styles = StyleSheet.create({
     height: 24.92,
     right: 10,
     top: 15, 
+  },
+  codeinput :{
+    top:90
   }
 });

@@ -1,15 +1,39 @@
 import React , {Component} from 'react';
 import {StyleSheet, Text, View,TouchableOpacity, StatusBar,TextInput} from 'react-native';
 import {Image as ReactImage} from 'react-native';
-
+import CodeInput from 'react-native-confirmation-code-input';
+import DeviceStorge from './Services/DeviceStorge';
+import axios from 'axios';
+const ACCESS_TOKEN = "token";
 
 export default class AccountEmail extends Component {
 
   constructor(props) {
       super(props);
       this.state = { 
+       code : ''
       };
   }
+  _onFulfill = async(code) => {
+try {
+// let {code} =this.state
+   CodeVerify =   {random :code }
+   console.log(CodeVerify)
+     const AuthStr = 'Bearer '.concat(await DeviceStorge.getItem(ACCESS_TOKEN)); 
+ const response = await axios.post(' https://karaz6.herokuapp.com/api/verifyAccount/CodeVerify' , CodeVerify ,{ headers: { Authorization: AuthStr } })
+  console.log(response.status)
+    if(response.status === 201 || response.status === 200){
+       this.props.navigation.navigate('Cong'); }
+       else  {
+          console.log("error ")
+       }
+}
+             catch(error) {
+        this.setState({error: error});
+        console.log("error " + error);
+    }
+  }
+
 
   render() {
     return (
@@ -26,39 +50,45 @@ export default class AccountEmail extends Component {
           </Text>
            <TouchableOpacity 
             style={styles.backbutton}
-                onPress={() => this.props.navigation.navigate('Home')}
+                onPress={() => this.props.navigation.navigate('Signup')}
             >
            <ReactImage
         source={require("./Images/surface1.png")}
         resizeMode="contain"
-       
         />
         </TouchableOpacity>
-        <View>
-        <TouchableOpacity  style={styles.backbutton} 
-          onPress={() => this.props.navigation.navigate('AssertPhone')}
-        >
-           <ReactImage
-        source={require("./Images/surface1.png")}
        
-       
-        />
-        </TouchableOpacity>
-           </View>
       <ReactImage
         source={require("./Images/checkemail.png")}
         resizeMode="contain"
         style={styles.image}
         />
-      <Text style={styles.text1}>
-        الرجاء إدخال الكود المرسل إلى رقم الهاتف
+        <Text style={styles.text1}>
+        الرجاء إدخال الكود المرسل إلى البريد الإلكتروني
            {"\n"} 
-           ********11
+          y*********i@gm***.com
       </Text>
       {/* <Text style={styles.text2}></Text> */}
       <Text style={styles.text3}>تفقدي بريدك الالكتروني !</Text>
+        <View style = {styles.codeinput}>
+        <CodeInput
+      ref="codeInputRef1"
+      secureTextEntry= {false}
+      className={'border-b'}
+      space={10}
+      size={30}
+    value={this.state.value}
+      codeLength={6}
+       activeColor="rgba(222, 49, 99, 1)"
+      inactiveColor='rgba(148, 148, 148, 1)'
+      inputPosition='center'
+      onFulfill={(code) => this._onFulfill(code)
+      
+      }
+    />
+  </View>
       <View>
-       <TouchableOpacity style={styles.button2}  onPress={() =>  this.props.navigation.navigate('NewPass')}>
+       <TouchableOpacity style={styles.button2}  onPress={() =>  this.props.navigation.navigate('Cong')}>
           <Text style={styles.textin}> تاكيد الحساب</Text>
         </TouchableOpacity>
            </View>
@@ -188,5 +218,8 @@ const styles = StyleSheet.create({
     height: 24.92,
     right: 10,
     top: 15, 
+  },
+   codeinput :{
+    top:90
   }
 });

@@ -11,8 +11,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { Image as ReactImage } from "react-native";
-
-// import axios from 'axios';
+import axios from 'axios';
 
 
 
@@ -20,21 +19,65 @@ export default class NewPass extends React.Component {
   constructor(props) {
     super(props);
    this.state = {
-      name: '',
-      phone:'',
-      password: '',
-      error: {},
-      loading: false,
-       isChecked: false,
+     password :'',
+      passwordConfirm: '',
+    random : '',
+    id: ''
  
     };
 
   }
+  onFulfill = async() => {
+try {
+let {password,passwordConfirm } = this.state
+  const random = this.props.navigation.getParam('RANDOM', 'some default value');
+  const id = this.props.navigation.getParam('ID', 'some default value');
+    this.setState({
+    random
+ });
+    this.setState({
+    id
+ });
+  console.log(random + "HJB"+ id )
+  let Changepassword = {password : password ,passwordConfirm :passwordConfirm , random: random, id:id }
+  console.log(Changepassword)
+ const response = await axios.post(' https://karaz6.herokuapp.com/api/forgetPassword/changePassword' , Changepassword)
+  console.log(response.status)
+    if(response.status === 201 || response.status === 200){
+       this.props.navigation.navigate('Login'); }
+       else  {
+          console.log("error ")
+       }
+}
+             catch(error) {
+        this.setState({error: error});
+        console.log("error " + error);
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   render() {
     return (
       <View style={styles.container}>
-
 <StatusBar  
     backgroundColor = "#CC5775"  
      barStyle = "dark-content"   
@@ -56,18 +99,24 @@ export default class NewPass extends React.Component {
 
           <TextInput
             style={styles.input1}
-            value={this.state.value}
-            placeholder="كلمة مرور جديدة"
+            value={this.state.passwordConfirm}
+             onChangeText={(value) => this.setState({passwordConfirm: value})}
+            placeholder= " تاكيد كلمة المرور"
           />
        
         <View>
           <TextInput
             style={styles.input2}
-            placeholder= " تاكيد كلمة المرور"
+             value={this.state.password}
+             onChangeText={(value) => this.setState({password: value})}
+                        placeholder="كلمة مرور جديدة"
           />
         </View>
        <View>
-       <TouchableOpacity style={styles.button2}>
+       <TouchableOpacity style={styles.button2}
+       onPress={() =>  this.onFulfill()}>
+        
+    
           <Text style={styles.textin}> استمرار</Text>
         </TouchableOpacity>
            </View>

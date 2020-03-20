@@ -78,3 +78,63 @@ async storeToken(user) {
       console.log("Something went wrong", error);
     }
   }
+  validateForm = () => {
+        let isValid = true;
+        let {name, phone, password , accept ,alertMsg} = this.state;
+        let errors = {};
+
+        if(!name) {
+            isValid = false;
+            errors["name"] = 'الرجاء إدخال اسم المستخدم'
+        }else if (name.length < 3) {
+            isValid = false;
+            errors["name"] = 'الاسم الذي أدخلته قصير جداً'
+
+        }else {
+            if(!name.match(/^[a-zA-Z\u0600-\u06FF\s]+$/)){
+                isValid = false;
+                errors["name"] = "الاسم يتكون من أحرف عربية أو انجليزية فقط"
+            }
+        }
+
+         if(!phone) {
+            isValid= false;
+            errors["phone"] = "ds"
+        }else{
+         if (!phone.match( /^[0]?[789]\d{9}$/)){
+            // if (!phone.match(/^0|08[0-9]{9,}$/)){
+                isValid = false;
+                errors["phone"] = 'البريد الالكتروني الذي أدخلته غير صحيح'
+            }
+        }
+
+        // if(!email) {
+        //     isValid= false;
+        //     errors["phone"] = 'الرجاء إدخال بريدك الإلكتروني'
+        // }else {
+        //     if (!email.match(/[^\d][\w.]+@\w+(\.[A-Za-z]+){1,2}/g)){
+        //         isValid = false;
+        //         errors["email"] = 'البريد الالكتروني الذي أدخلته غير صحيح'
+        //     }
+        // }
+
+        if (!password) {
+            isValid = false;
+            errors["password"] = "الرجاء إدخال كلمة مرور";
+        }else {
+            if(!password.match(/^(?=.*\d)(?=.*[a-z]).{8,}$/)){
+                isValid = false;
+                errors["password"] =  ".كلمة المرور التي اخترتها ضعيفة, يجب ان تحتوي أحرف وأرقام ";
+            }
+        }
+
+        // if (!accept) {
+        //     isValid = false;
+        //     alertMsg =  " لم توافق على شروط الخدةم"
+        //     this.setState({alertMsg});
+        //     errors["accept"] = "لم توافق على شروط الخدمة"
+        // }
+
+        this.setState({errors: errors});
+        return isValid;
+    };

@@ -3,25 +3,27 @@ import {StyleSheet, View, Image,Text,AsyncStorage,Keyboard ,TouchableOpacity,Tex
 import {Image as ReactImage} from 'react-native';
 import DeviceStorge from './Services/DeviceStorge';
 import axios from 'axios';
-
+const ACCESS_TOKEN = "token";
 export default class Login extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      email : '',
+      MultiInput : '',
       password : ''  ,
        errors: {} 
     };
       this.LoginUser = this.LoginUser.bind(this);
+  
+    
   }
      validateForm = () => {
         let isValid = true;
-        let {email, password} = this.state;
+        let {phone, password} = this.state;
         let errors = {};
 
-        if (!email) {
+        if (!phone) {
             isValid = false;
-            errors["email"] = 'لم تدخل بريدك الإلكتروني بعد'
+            errors["phone"] = 'لم تدخل بريدك الإلكتروني بعد'
         }
 
         if (!password) {
@@ -32,24 +34,38 @@ export default class Login extends React.Component {
         this.setState({errors: errors});
         return isValid;
     };
-  LoginUser() {
-    if(this.validateForm()){
-    const { email, password } = this.state;    
-    axios.post("http://karaz5.herokuapp.com/api/user/login",{
-        email: email,
-        password: password,
-    },)
-    .then((response) => {
-      //  alert(response);
-       this.props.navigation.navigate('Cong');
-     // console.log(response);
-    })
-    .catch((error) => {
-      alert(error);
-      // console.log(error);
-    });
+  async LoginUser() {
+    try {
+ let { MultiInput ,password} = this.state;
+let user = {password}
+
+  if(MultiInput.includes("@")) { user.email= MultiInput}
+      else {user.phone= MultiInput }
+
+     
+  const Response = await  axios.post('https://karaz6.herokuapp.com/api/user/login' , user ) 
+    await DeviceStorge.setItem(ACCESS_TOKEN,Response.data.token);
+     const AuthStr = 'Bearer '.concat(await DeviceStorge.getItem(ACCESS_TOKEN)); 
+     console.log(AuthStr + "llllooogin")
+    const response = await  axios.get('https://karaz6.herokuapp.com/api/user/profile',{ headers: { Authorization: AuthStr } }) 
+      if(response.status === 200) {
+               this.props.navigation.navigate('Cong');}
+    else if(response.status === 201) { 
+       const response2 = await  axios.get('https://karaz6.herokuapp.com/api/verifyAccount/MobileSend',{ headers: { Authorization: AuthStr } }) 
+                    var obj = JSON.parse(Response.config.data)
+                   if("email" in obj){ this.props.navigation.navigate('AccountEmail'); }
+                     else {  this.props.navigation.navigate('AccountPhone');}  }                           
+      }catch(error) {
+        this.setState({error: error});
+        console.log("error " + error);
+    }
+ 
   }
-}
+ 
+  
+  
+   
+
   render() {
     return (
       <View style={styles.container}>
@@ -112,10 +128,11 @@ export default class Login extends React.Component {
             //     keyboardType="email-address"
           
              onSubmitEditing={()=> this.password.focus()}
-           onChangeText={email => this.setState({ email })}
+              onChangeText={(value) => this.setState({MultiInput: value})}
+        value={this.state.MultiInput}
             placeholder="رقم الهاتف او البريد الاكتروني"
           />
-              <Text style={styles.errorStyle1}>{this.state.errors["email"]}</Text> 
+              <Text style={styles.errorStyle1}>{this.state.errors["phone"]}</Text> 
         </View>
         <View>
           <TextInput
@@ -380,7 +397,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 26,
     right: 100,
-    top:285
+    top:270
   },
   button4: {
     opacity: 1,
@@ -396,7 +413,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 26,
     right: 195,
-    top:285
+    top:270
   },
   text4: {
   fontSize: 14,
@@ -492,7 +509,7 @@ fontFamily: "cairo-regular",
     fontWeight: '400',
     // fontStyle: 'Regular',
     // fontFamily: 'Arial',
-    top: 340,
+    top: 320,
     left:180
     
   },
@@ -504,7 +521,7 @@ fontFamily: "cairo-regular",
     fontWeight: '400',
     // fontStyle: 'Light',
     // fontFamily: 'SF Pro Text',
-    top: 340,
+    top: 320,
     right:180
     
   },
